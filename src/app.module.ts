@@ -1,48 +1,51 @@
 import { Module } from '@nestjs/common';
+import { HttpModule, HttpService } from '@nestjs/axios';
+import { ConfigModule } from '@nestjs/config';
+import * as Joi from 'joi';
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ProductsController } from './controllers/products.controller';
-import { CategoriesController } from './controllers/categories.controller';
-import { BrandsController } from './controllers/brands.controller';
-import { UsersController } from './controllers/users.controller';
-import { CostumersController } from './controllers/costumers.controller';
-import { OrdersController } from './controllers/orders.controller';
-import { ProductsService } from './services/products.service';
-import { CategoriesService } from './services/categories.service';
-import { CustomersService } from './services/customers.service';
-import { BrandsService } from './services/brands.service';
-import { UsersService } from './services/users.service';
+import { UsersModule } from './users/users.module';
+import { ProductsModule } from './products/products.module';
+import { firstValueFrom } from 'rxjs';
+import { DatabaseModule } from './database/database.module';
 
-/**
- * Es una clase, de Programación orientada a objetos, que observarás que no tiene ningún código en especial. Sin embargo está precedida de un decorador @module, que es el que hace que esta clase se comporte como un módulo de aplicación.
- */
+import { enviroments } from './enviroments'; // 👈
+import config from './config';
 
 @Module({
-  imports: [],
-  controllers: [
-    AppController,
-    ProductsController,
-    CategoriesController,
-    BrandsController,
-    UsersController,
-    CostumersController,
-    OrdersController,
+  imports: [
+    HttpModule,
+    UsersModule,
+    ProductsModule,
+    DatabaseModule,
+    ConfigModule.forRoot({
+      envFilePath: enviroments[process.env.NODE_ENV] || '.env', // 👈
+      load: [config],
+      isGlobal: true,
+      validationSchema: Joi.object({
+        API_KEY: Joi.number().required(),
+        DATABASE_NAME: Joi.string().required(),
+        DATABASE_PORT: Joi.number().required(),
+      }),
+    }),
   ],
+  controllers: [AppController],
   providers: [
     AppService,
-    ProductsService,
-    CategoriesService,
-    CustomersService,
-    BrandsService,
-    UsersService,
+    {
+      provide: 'TASKS',
+      useFactory: async (http: HttpService) => {
+        //usar el patron Factory para conexiones de BD y no para call a apis
+
+        const tasks = await firstValueFrom(
+          http.get('https://jsonplaceholder.typicode.com/todos'),
+        );
+
+        return tasks;
+      },
+      inject: [HttpService],
+    },
   ],
 })
 export class AppModule {}
-
-/**
- * En el decorador @module se coloca toda la configuración del módulo. Observarás   que se declara un controlador (propiedad "controllers") y un servicio (propiedad "providers"), que son otros de los dos archivos que se importan en esta clase y que también se encuentran en la carpeta src.
- */
-
-/**
- * Básicamente los decoradores los podemos colocar antes de alguna estructura de código, como una clase, un método o atributo, y lo que permiten es colocar metadatos que sirven para configurar ese elemento que está siendo decorado.
- */

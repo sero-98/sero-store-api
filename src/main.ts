@@ -1,21 +1,29 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
-import { AppModule } from './app.module';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
-/**
- * Este es el archivo que realiza el arranque de la aplicación. Todo comienza en el  * main.ts.
- * Contiene la importación del core de NestJS y el módulo principal de la aplicación * (app.module). Luego realiza el propio arranque de la aplicación con la función
- * bootstrap().
- */
+import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true, //va a oviar todos los parametros que no esten en el dto
       forbidNonWhitelisted: true, //va botar error sobre lo anterior
     }),
   );
-  await app.listen(3005);
+
+  const config = new DocumentBuilder()
+    .setTitle('API')
+    .setDescription('SERO STORE')
+    .setVersion('1.0')
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('docs', app, document);
+
+  app.enableCors();
+
+  await app.listen(process.env.PORT || 3005);
 }
 bootstrap();

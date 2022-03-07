@@ -11,20 +11,23 @@ import {
   Query,
   //ParseIntPipe,
 } from '@nestjs/common';
+import { ApiTags, ApiOperation } from '@nestjs/swagger'; // 👈
 
 import { ProductsService } from '../services/products.service';
-import { ParseIntPipe } from '../common/parse-int.pipe';
+import { ParseIntPipe } from '../../common/parse-int.pipe';
 import { CreateProductDto, UpdateProductDto } from '../dtos/product.dto';
 
+@ApiTags('products') // 👈
 @Controller('products')
 export class ProductsController {
   constructor(private productService: ProductsService) {}
 
   @Get('')
+  @ApiOperation({ summary: 'List of products' }) // 👈
   getAll(
     @Query('limit') limit = 100, // atributo por defecto e inferido
     @Query('offset') offset = 0,
-    @Query('brand') brand: string,
+    @Query('brand') brand?: string,
   ) {
     /*return `
       products limit=> ${limit}; <br/>

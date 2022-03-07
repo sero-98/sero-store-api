@@ -1,16 +1,18 @@
-import { Injectable } from '@nestjs/common';
-
-/**
- * Este es el servicio que usaba el controlador. El servicio nuevamente es una clase, aunque en este caso el concepto de servicio está un poco infrautilizado, ya que tiene un simple método que devuelve una cadena. Ese método es getHello(), el que se invocó desde el controlador.
- */
-
-/**
- * Lo interesante de este servicio es que está decorado con @injectable(). Básicamente este decorador permite que este servicio se pueda enviar al constructor de los controladores, mediante la inyección de dependencias que nos ofrece NestJS.
- */
+import { Inject, Injectable } from '@nestjs/common';
+import { ConfigType } from '@nestjs/config'; // 👈
+import config from './config';
 
 @Injectable()
 export class AppService {
+  constructor(
+    @Inject('TASKS') private tasks: any[],
+    @Inject(config.KEY) private configService: ConfigType<typeof config>,
+  ) {}
+
   getHello(): string {
-    return 'Hello World!';
+    const apiKey = this.configService.apiKey;
+    const dbName = this.configService.database.name;
+    const dbPort = this.configService.database.port;
+    return `api: ${apiKey} db: ${dbName} db_port: ${dbPort}`;
   }
 }
