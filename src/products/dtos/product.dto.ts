@@ -8,8 +8,7 @@ import {
 } from 'class-validator';
 
 //import { PartialType } from '@nestjs/mapped-types';
-import { PartialType, ApiProperty  } from '@nestjs/swagger';
-
+import { PartialType, ApiProperty } from '@nestjs/swagger';
 
 export class CreateProductDto {
   @IsString()
@@ -38,10 +37,10 @@ export class CreateProductDto {
   @IsNotEmpty()
   @ApiProperty() // 👈
   readonly image: string;
-};
+}
 
 /**
  * PartialType
  * coge nuestra dto base y los pone como opcional osea le pone ?
  */
-export class UpdateProductDto extends PartialType(CreateProductDto) {};
+export class UpdateProductDto extends PartialType(CreateProductDto) {}
